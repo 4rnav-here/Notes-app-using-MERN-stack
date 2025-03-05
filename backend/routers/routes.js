@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router();
 const {createAccount, Login, addNote} = require("../controllers/accountController");
 const app = express();
-const {validateToken} = require("../middleware/validateToken");
+const validateToken = require("../middleware/validateToken");
 
 
 router.route("/createAccount").post(createAccount);
