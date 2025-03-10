@@ -19,12 +19,13 @@ const validateToken = asyncHandler(async(req, res, next) => {
         if (err) {
             return res.status(403).json({ error: "Forbidden: Invalid token" });
         }
-    
-        if (!decoded.user || !decoded.user._id) {  // ✅ Now checking correctly
+        
+        console.log("Decoded:",decoded)
+        if (!decoded) {
             return res.status(401).json({ error: "Unauthorized: Invalid user data in token" });
         }
-    
-        req.user = decoded.user; // ✅ Assign correctly
+        req.user = decoded._id; // ✅ Assign correctly
+        console.log(req.user)
         next();
     });
     

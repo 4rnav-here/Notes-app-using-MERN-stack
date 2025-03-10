@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user.models");
 const Note = require("../models/note.models");
 
+// TODO: Add try catch everywhere 
+
 const createAccount = asyncHandler(async (req, res) => {
   const { fullName, email, password } = req.body;
 
@@ -88,8 +90,9 @@ const Login = asyncHandler(async (req, res) => {
       message: "Login Successful",
       email,
       accessToken,
-      user,
+      user,//user and email both being sent ? 
     });
+    //add try catch before and after db calls 
   } else {
     return res.json({
       error: true,
@@ -98,50 +101,39 @@ const Login = asyncHandler(async (req, res) => {
   }
 });
 
-const addNote = asyncHandler(async (req, res) => {
-  const { title, content, tags, isPinned } = req.body;
-  const userId = req.user._id;
+const getUser = asyncHandler( async (req, res) => {
+  const userId = req.user;
+  try{
+    const isUser = await User.findOne({_id: userId})
 
-  if (!title) {
-    return res.status(400).json({ error: true, message: "Title is required" });
-  }
-  if (!content) {
-    return res
-      .status(400)
-      .json({ error: true, message: "Content is required" });
-  }
-  if (!req.user || !req.user._id) {
-    return res
-      .status(401)
-      .json({ error: true, message: "Unauthorized: User ID missing" });
-  }
-  try {
-    const note = new Note({
-      title: title,
-      content: content,
-      tags: tags || [],
-      userID: req.user._id,
-      isPinned: isPinned || false,
-    });
-
-    await note.save();
-
+    if(!isUser){
+      return res.json({
+        error: true,
+        message: "No such user found"
+      })
+    }
+    
     return res.json({
-      error: false,
-      note,
-      message: "Note created successfully",
-    });
-  } catch (error) {
-    console.error("Error creating note:", error);
+      message:"User found",
+      isUser
+    })
+    }
+
+  catch(error){
+    console.log(error);
     return res.status(500).json({
       error: true,
-      message: "Internal server error",
-    });
+      message: "Internal server error"
+    })
   }
-});
+
+
+
+})
+
 
 module.exports = {
   createAccount,
   Login,
-  addNote,
+  getUser
 };

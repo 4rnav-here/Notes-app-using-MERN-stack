@@ -1,30 +1,38 @@
 const express = require("express");
-const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
 const config = require("./config.json");
-const asyncHandler = require("express-async-handler");
-const dotenv = require("dotenv").config();
 
-mongoose.connect(config.connectionString);
-const jwt = require("jsonwebtoken");
+const app = express();
+const PORT = process.env.PORT || 5000;
+console.log("Connecting to MongoDB...");
 
+mongoose
+  .connect(config.connectionString)
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
+  });
+
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+console.log("Loading routes...");
+try {
+  app.use("/", require("./routers/routes.js"));
+  console.log("✅ Routes loaded successfully.");
+} catch (error) {
+  console.error("❌ Error loading routes:", error);
+}
 
 app.get("/", (req, res) => {
-  res.json({ data: "Server is running on port 5000" });
+  res.json({ data: `Server is running on port ${PORT}` });
 });
 
-app.use("/", require("./routers/routes.js"));
+app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
 
-  
-
-app.listen(5000);
-
-module.exports = app;
+// Capture unexpected errors
+process.on("uncaughtException", (err) => {
+  console.error("❌ Uncaught Exception:", err);
+});
