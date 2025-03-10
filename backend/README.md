@@ -1,1 +1,3 @@
-Backend of notes app restapi is work in progress
+### Backend of this app is completed.
+
+#### Api integration to frontend is in progress
