@@ -9,7 +9,7 @@ const PasswordInput = ({ value, onChange, placeholder }) => {
         }
 
   return (
-    <div className="flex items-center bg-transparent border-[1.5px] px-5 py-1.5 rounded mb-3 relative">
+    <div className="flex items-center bg-transparent border-[1px] px-5 py-1.5 rounded mb-3 relative">
         <input value={value}
         onChange={onChange}
         type={isShowPassword ? "text" : "password"}

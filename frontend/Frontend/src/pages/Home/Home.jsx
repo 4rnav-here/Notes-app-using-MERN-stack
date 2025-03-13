@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import NoteCard from "../../components/Cards/Notecard";
 import { MdAdd } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
 import Modal from "react-modal";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../utils/axiosInstance";
 
 const Home = () => {
   const [openAddEditNote, setOpenAddEditNote] = useState({
@@ -12,9 +14,39 @@ const Home = () => {
     data: null,
   });
 
+  const [userInfo, setUserInfo] = useState();
+  const navigate = useNavigate();
+
+  const accessToken = localStorage.getItem("token");
+
+  //API call to get user info
+  const getUserInfo = async () => {
+    try {
+      const response = await axiosInstance.get("/getuser");
+      console.log("API Response:", response.data); // Debugging
+      if (response.data && response.data.isUser) {
+        // console.log("API Response:", response.data.user); // Debugging
+        setUserInfo(response.data.isUser); // ✅ Correctly setting userInfo
+      }
+    } catch (error) {
+      console.log("Error fetching user info:", error);
+      localStorage.clear();
+      navigate("/login");
+    }
+  };
+  
+  useEffect(() => {
+    getUserInfo();
+    return () => {};
+  }, []);
+
+  useEffect(() => {
+    console.log("Updated UserInfo:", userInfo);
+  }, [userInfo]);
+
   return (
     <>
-      <Navbar />
+      <Navbar userInfo={userInfo} />
 
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
