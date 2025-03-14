@@ -167,6 +167,40 @@ const updatePinNote = asyncHandler( async (req, res) => {
 
 })
 
+const searchNote = asyncHandler( async (req, res) => {
+  const user  = req.user;
+  const {query} = req.query;
+  console.log(user)
+  console.log(query)
+  if(!query) {
+    return res.status(401).json({
+      error: true,
+      message: "Search query required"
+    })
+  }
+  try{
+    const matchingNote = await Note.find({
+      userID: user,
+      $or: [
+        {title : { $regex: new RegExp(query, "i") } },
+        {content : { $regex : new RegExp(query, "i") } }
+      ],
+    });
+
+    return res.json({
+      error: false,
+      notes: matchingNote,
+      message: "Notes matching the querry retrieved successfully"
+    });
+  }
+  catch(error){
+    console.log(error)
+    return res.status(500).json({
+      error: true,
+      messagee: error
+    })
+  }
+})
 
 module.exports = {
   addNote,
@@ -174,4 +208,5 @@ module.exports = {
   getallNotes,
   deleteNote,
   updatePinNote,
+  searchNote
 };

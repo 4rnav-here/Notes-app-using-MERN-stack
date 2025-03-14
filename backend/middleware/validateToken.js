@@ -25,7 +25,7 @@ const validateToken = asyncHandler(async(req, res, next) => {
             return res.status(401).json({ error: "Unauthorized: Invalid user data in token" });
         }
         req.user = decoded._id; // ✅ Assign correctly
-        console.log(req.user)
+        console.log("User Id" + req.user)
         next();
     });
     
