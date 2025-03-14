@@ -4,7 +4,7 @@ import ProfileInfo from "../Cards/ProfileInfo";
 import { Navigate, useNavigate } from "react-router-dom";
 import SearchBar from "../SearchBar/SearchBar";
 
-const Navbar = ({userInfo}) => {
+const Navbar = ({userInfo, searchNote, clearSearch}) => {
   const navigate = useNavigate();
   const  [searchQuerry, setSearchQuerry ] = useState("");
   const onLogout = () => {
@@ -12,10 +12,16 @@ const Navbar = ({userInfo}) => {
     navigate("/login");
   };
 
-  const handleSearch = () => {};
+  const handleSearch = () => {
+    console.log("Search api called")
+    if(searchQuerry){
+      searchNote(searchQuerry)
+    }
+  };
 
   const onClearSearch = () => {
     setSearchQuerry("");
+    clearSearch();
   }
 
   return (
@@ -32,7 +38,7 @@ const Navbar = ({userInfo}) => {
           onClearSearch={onClearSearch}
         />
 
-        <ProfileInfo userInfo = {userInfo} onLogout={onLogout} />
+        {userInfo && <ProfileInfo userInfo = {userInfo} onLogout={onLogout} />}
       </div>
     </>
   );

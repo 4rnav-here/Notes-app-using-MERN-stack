@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import PasswordInput from "../../components/Input/PasswordInput";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
+import axiosInstance from "../../utils/axiosInstance";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const navigate =useNavigate();
 
   const handleSignUp = async (e) => {
     // console.log("button clicked");
@@ -28,7 +30,38 @@ const Signup = () => {
     }
 
     setError("");
+      try{
+        const response = await axiosInstance.post("/createAccount", {
+          fullName: name,
+          email: email,
+          password: password
+        })
+        console.log(response)
+    
+        //Handling successfull signup
+        if(response.data && response.data.error){
+          setError(response.data.message)
+          return 
+        }
+        if(response.data && response.data.accessToken){
+          localStorage.setItem("token", response.data.accessToken)
+          navigate('/dashboard')
+        }
+       }
+      catch(error){
+        if(error.response && error.response.data && error.data.response.message ){
+          setError(error.data.response.message)
+        }
+        else{
+          setError("An unexpected error occured. Please try again")
+        }
+     }
   };
+
+  //Signup API Integration here
+ 
+
+
 
   return (
     <>
@@ -67,7 +100,7 @@ const Signup = () => {
 
             <p className="text-sm text-center mt-4">
               Already have an account{"? "}
-              <Link to="/login" className="font-mediuim text-primary underline">
+              <Link to="/login" className="font-medium text-primary underline">
                 {""}
                 Login
               </Link>

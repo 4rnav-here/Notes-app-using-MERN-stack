@@ -6,6 +6,8 @@ import AddEditNotes from "./AddEditNotes";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
+import moment from "moment";
+import Notification from "../../components/Notification/Notification";
 
 const Home = () => {
   const [openAddEditNote, setOpenAddEditNote] = useState({
@@ -14,10 +16,36 @@ const Home = () => {
     data: null,
   });
 
+  const [showNotification, setNotification] = useState({
+    isShown: false,
+    message: "",
+    type: "add",
+  });
+  const accessToken = localStorage.getItem("token");
   const [userInfo, setUserInfo] = useState();
   const navigate = useNavigate();
+  const [allNotes, setAllNotes] = useState([]);
+  const [search , setSearch] = useState(false);
 
-  const accessToken = localStorage.getItem("token");
+
+  const handleCloseNotification = () => {
+    setNotification({
+      isShown: false,
+      message: "",
+    });
+  };
+
+  const showNotificationMessage = (message, type) => {
+    setNotification({
+      isShown: true,
+      message,
+      type,
+    });
+  };
+
+  const handleEdit = async (noteDetails) => {
+    setOpenAddEditNote({ isShown: true, data: noteDetails, type: "edit" });
+  };
 
   //API call to get user info
   const getUserInfo = async () => {
@@ -34,9 +62,68 @@ const Home = () => {
       navigate("/login");
     }
   };
-  
+
+  const getAllNotes = async () => {
+    try {
+      const response = await axiosInstance.get("/getallnotes");
+      if (response.data && response.data.notes) {
+        setAllNotes(response.data.notes);
+      }
+    } catch (error) {
+      console.log(error);
+      console.log("An unexpected error has occured");
+    }
+  };
+
+  const deleteNote = async (data) => {
+    const noteId = data._id;
+    console.log(noteId)
+
+    try{
+      const response = await axiosInstance.delete("/deletenote/"+ noteId)
+
+      if(response.data && !response.data.error){
+        console.log(response.data.note)
+        showNotificationMessage("Note Deleted successfully", "delete")
+        getAllNotes()
+      }
+    }catch(error){
+      if(error.response && error.response.data){
+        setError(error.response.data.message)
+      }
+
+    }
+  }
+
+  const searchNote = async(query) => {
+    try{
+      const response = await axiosInstance.get("/searchnote/", {
+        params: {query},
+      });
+      console.log(response)
+
+      if(response.data && response.data.notes){
+        setSearch(true);
+        setAllNotes(response.data.notes);
+      }
+    }
+    catch(error){
+      console.log(error)
+    }
+  }
+
+  const clearSearch = async() => {
+    setSearch(false);
+    getAllNotes();
+  }
+
+  const updateIsPinned = async() => {
+    
+  }
+
   useEffect(() => {
-    getUserInfo();
+    getUserInfo(), getAllNotes();
+
     return () => {};
   }, []);
 
@@ -46,15 +133,21 @@ const Home = () => {
 
   return (
     <>
-      <Navbar userInfo={userInfo} />
+      <Navbar userInfo={userInfo} searchNote={searchNote} clearSearch={clearSearch} />
 
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
-          <NoteCard
-            title="Test note for checking proper functioning"
-            date="24th Feb 2025"
-            content="Just a note to check if everything's working properly"
-          />
+          {allNotes.map((item, index) => (
+            <NoteCard
+              key={item._id}
+              title={item.title}
+              date={moment(item.createdAt).format("dddd, MMMM Do YYYY")}
+              content={item.content}
+              tags={item.tags}
+              onEdit={() => handleEdit(item)}
+              onDelete={() => deleteNote(item)}
+            />
+          ))}
         </div>
       </div>
 
@@ -86,8 +179,20 @@ const Home = () => {
           onClose={() => {
             setOpenAddEditNote({ isShown: false, type: "add", data: null });
           }}
+          setAllNotes={setAllNotes}
+          getAllNotes={getAllNotes}
+          showNotificationMessage= {showNotificationMessage}
         />
       </Modal>
+
+      <Notification
+        isShown={showNotification.isShown}
+        message={showNotification.message}
+        type={showNotification.type}
+        onClose={handleCloseNotification}
+      >
+        Notification
+      </Notification>
     </>
   );
 };

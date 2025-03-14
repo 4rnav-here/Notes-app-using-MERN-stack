@@ -1,17 +1,59 @@
 import React, { useState } from "react";
 import TagInput from "../../components/Input/TagInput";
 import { MdClose } from "react-icons/md";
+import axiosInstance from "../../utils/axiosInstance";
 
-const AddEditNotes = ({noteData, type, onClose }) => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [tags, setTags] = useState([]);
+const AddEditNotes = ({noteData, type, onClose, getAllNotes, showNotificationMessage }) => {
+  console.log(noteData)
+  const [title, setTitle] = useState(noteData?.title || "");
+  const [content, setContent] = useState(noteData?.content || "");
+  const [tags, setTags] = useState(noteData?.tags || []);
 
   const [error, setError] = useState(null);
 
-  const addNewNote = async () => {};
+  //API to add note
+  const addNewNote = async () => {
+    console.log("Api is called")
+    try{
+      const response = await axiosInstance.post("/addnote",{
+        title,
+        tags,
+        content
+      })
+      if(response.data && response.data.note){
+        console.log(response.data.note)
+        showNotificationMessage("Note added successfully")
+        getAllNotes()
+      }
+    }catch(error){
+      if(error.response && error.response.data){
+        setError(error.response.data.message)
+      }
 
-  const editNote = async () => {};
+    }
+  };
+
+  const editNote = async () => {
+    const noteId = noteData._id;
+
+    try{
+      const response = await axiosInstance.post("/editnote/"+ noteId,{
+        title,
+        tags,
+        content
+      })
+      if(response.data && response.data.note){
+        console.log(response.data.note)
+        showNotificationMessage("Note edited successfully")
+        getAllNotes()
+      }
+    }catch(error){
+      if(error.response && error.response.data){
+        setError(error.response.data.message)
+      }
+
+    }
+  };
 
   const handleAddNote = () => {
     if(!title || !content) {
@@ -19,7 +61,7 @@ const AddEditNotes = ({noteData, type, onClose }) => {
       return;
     }
     setError("");
-  }
+  
 
   if(type === "edit"){
     editNote();
@@ -27,6 +69,8 @@ const AddEditNotes = ({noteData, type, onClose }) => {
   else{
     addNewNote();
   }
+  onClose?.();
+}
   return (
     <div className="relative">
       <button
@@ -64,7 +108,7 @@ const AddEditNotes = ({noteData, type, onClose }) => {
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <button className="bg-blue-500 text-white font-medium p-3 rounded-md hover:bg-blue-600 transition duration-300"
         onClick={handleAddNote}>
-          Add
+          {type==="edit" ? `UPDATE` : `ADD`}
         </button>
       </div>
     </div>
