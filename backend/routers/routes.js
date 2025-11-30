@@ -16,8 +16,7 @@ router.post("/addnote", validateToken, addNote);
 router.post("/editnote/:noteId", validateToken, editNote);
 router.get("/getallnotes", validateToken, getallNotes);
 router.delete("/deletenote/:noteId", validateToken, deleteNote);
-router.post("/updatepinnote/:noteId", validateToken, updatePinNote);
+router.put("/pinnote/:noteId", validateToken, updatePinNote);
 router.get("/searchnote/", validateToken, searchNote);
-
 
 module.exports = router;

@@ -131,7 +131,7 @@ const deleteNote = asyncHandler(async (req, res) => {
 const updatePinNote = asyncHandler( async (req, res) => {
   const noteId = req.params.noteId;
   const userId = req.user;
-
+  console.log("Update note api is being called")
   try{
     const note = await Note.findOne({_id: noteId, userID: userId});
     const {isPinned} = req.body;
